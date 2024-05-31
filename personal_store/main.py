@@ -14,6 +14,7 @@ class main (qt.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(app.name + _("version : ") + str(app.version))
+        self.itemsList=[]
         layout=qt.QVBoxLayout()
         layout.addWidget(qt.QLabel(_("category")))
         self.category=qt.QComboBox()
@@ -32,8 +33,17 @@ class main (qt.QMainWindow):
         layout.addWidget(self.update)
         self.items=qt.QListWidget()
         layout.addWidget(self.items)
+        self.summery=qt.QLineEdit()
+        self.summery.setReadOnly(True)
+        layout.addWidget(self.summery)
+        self.image=qt.QLabel(_("item image"))
+        layout.addWidget(self.image)
+        self.price=qt.QLabel()
+        layout.addWidget(self.price)
+        self.items.currentRowChanged.connect(self.on_item_changed)
         self.open=qt.QPushButton(_("open item"))
         self.open.setDefault(True)
+        self.open.clicked.connect(lambda:gui.ViewItem(self,self.itemsList[self.items.currentRow()]).exec())
         layout.addWidget(self.open)
         self.load("all","date")
         self.setting=qt.QPushButton(_("settings"))
@@ -94,14 +104,20 @@ class main (qt.QMainWindow):
             self.close()
     def load(self,category,sort):
         data={"category":category,"sort":sort}
-        r=requests.post(app.link + "en/api/items",data=data)
+        r=requests.post(app.link + "/en/api/items",data=data)
         result=r.json()
         self.items.clear()
         self.category.clear()
+        self.itemsList=result["data"]
         for item in result["data"]:
             self.items.addItem(item["name"])
         self.category.addItems(result["categories"])
-
+    def on_item_changed(self,index):
+        currentItemData=self.itemsList[index]
+        self.summery.setText(currentItemData["summery"])
+        image=qt1.QPixmap(app.link + currentItemData["image"])
+        self.image.setPixmap(image)
+        self.price.setText(str(currentItemData["price"]) + "$")
 App=qt.QApplication([])
 w=main()
 w.show()
