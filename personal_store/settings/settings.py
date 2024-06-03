@@ -25,6 +25,8 @@ class settings (qt.QDialog):
         self.layout1=tabs.Genral(self)
         self.sectian.add(_("general"),self.layout1)
         self.sectian.add(_("update"),self.update)
+        account=tabs.Account(self)
+        self.sectian.add(_("account"),account)
         restoar=tabs.Restoar(self)
         self.sectian.add(_("Backup and restoar"),restoar)
         layout.addWidget(self.ok)
